@@ -1,0 +1,33 @@
+export interface MemberData {
+  id: string
+  name: string
+  email: string
+}
+
+export interface ReservationData {
+  id: string
+  destination: string
+  villa: string
+  arrivalDate: string
+  departureDate: string
+  member: MemberData
+}
+
+export interface ProposalData {
+  id: string
+  status: string
+  createdAt: string
+  sentAt: string | null
+  notes: string | null
+  _count: { items: number }
+  reservation: { member: MemberData }
+}
+
+export interface DraftItem {
+  _localId: string
+  category: string
+  title: string
+  description: string
+  scheduledAt: string
+  price: number
+}
