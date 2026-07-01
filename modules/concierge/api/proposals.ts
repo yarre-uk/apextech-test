@@ -5,12 +5,22 @@ import { z } from 'zod';
 
 /**
  * GET /api/proposals
- * Returns all proposals ordered by creation date (newest first),
+ * Returns proposals ordered by creation date (newest first),
  * each including the reservation+member and item count.
+ * @param ?reservationId - filters proposals to a single reservation
+ * @param ?proposalId    - narrows to a single proposal by id
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const { searchParams } = new URL(request.url);
+    const reservationId = searchParams.get('reservationId') ?? undefined;
+    const proposalId = searchParams.get('proposalId') ?? undefined;
+
     const proposals = await prisma.proposal.findMany({
+      where: {
+        ...(reservationId && { reservationId }),
+        ...(proposalId && { id: proposalId }),
+      },
       include: {
         reservation: { include: { member: true } },
         _count: { select: { items: true } },

@@ -2,13 +2,22 @@ import { prisma } from '@/lib/db'
 
 /**
  * GET /api/reservations
- * Returns the first upcoming reservation with its member.
+ * Returns the first upcoming reservation with its member and proposals (newest first).
  * 404 if no reservation exists.
  */
 export async function GET() {
   try {
     const reservation = await prisma.reservation.findFirst({
-      include: { member: true },
+      include: {
+        member: true,
+        proposals: {
+          include: {
+            _count: { select: { items: true } },
+            reservation: { include: { member: true } },
+          },
+          orderBy: { createdAt: 'desc' },
+        },
+      },
       orderBy: { arrivalDate: 'asc' },
     })
 

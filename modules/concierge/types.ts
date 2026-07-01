@@ -11,6 +11,7 @@ export interface ReservationData {
   arrivalDate: string
   departureDate: string
   member: MemberData
+  proposals: ProposalData[]
 }
 
 export interface ProposalData {
