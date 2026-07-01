@@ -1,16 +1,9 @@
-import { env } from '@/lib/env'
+import { getReservation } from '@/modules/concierge/api.server'
 import { TripHeader } from '@/modules/concierge/components/trip-header'
 import { ConciergeDashboard } from '@/modules/concierge/components/dashboard'
-import type { ReservationData } from '@/modules/concierge/types'
 
 export const metadata = {
   title: 'Concierge Portal — Exclusive Resorts',
-}
-
-async function getReservation(): Promise<ReservationData | null> {
-  const res = await fetch(`${env.APP_URL}/api/reservations`, { cache: 'no-store' })
-  if (!res.ok) return null
-  return res.json()
 }
 
 export default async function HomePage() {

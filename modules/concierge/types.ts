@@ -24,6 +24,31 @@ export interface ProposalData {
   reservation: { member: MemberData }
 }
 
+export interface ProposalItem {
+  id: string
+  category: string
+  title: string
+  description: string
+  scheduledAt: string
+  price: number
+}
+
+export interface ProposalDetailData {
+  id: string
+  status: string
+  notes: string | null
+  createdAt: string
+  sentAt: string | null
+  reservation: {
+    destination: string
+    villa: string
+    arrivalDate: string
+    departureDate: string
+    member: MemberData
+  }
+  items: ProposalItem[]
+}
+
 export interface DraftItem {
   _localId: string
   category: string

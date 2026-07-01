@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useProposalStore } from '@/modules/concierge/store/proposal-store'
+import { createProposal, sendProposal } from '@/modules/concierge/api'
 import { ProposalBuilder } from './proposal-builder'
 import { ProposalsList } from './proposals-list'
 import type { ProposalData, ReservationData } from '@/modules/concierge/types'
@@ -22,27 +23,14 @@ export function ConciergeDashboard({ reservation, initialProposals }: ConciergeD
     if (items.length === 0) return
     setIsSending(true)
     try {
-      const createRes = await fetch('/api/proposals', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          reservationId: reservation.id,
-          notes: notes || undefined,
-          items: items.map(({ category, title, description, scheduledAt, price }) => ({
-            category,
-            title,
-            description,
-            scheduledAt,
-            price,
-          })),
-        }),
-      })
-
-      if (!createRes.ok) throw new Error('Failed to create proposal')
-      const proposal = await createRes.json()
-
-      const sendRes = await fetch(`/api/proposals/${proposal.id}/send`, { method: 'POST' })
-      if (!sendRes.ok) throw new Error('Failed to send proposal')
+      const proposal = await createProposal(
+        reservation.id,
+        notes || undefined,
+        items.map(({ category, title, description, scheduledAt, price }) => ({
+          category, title, description, scheduledAt, price,
+        })),
+      )
+      await sendProposal(proposal.id)
 
       reset()
       setSuccessId(proposal.id)
