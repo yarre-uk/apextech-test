@@ -1,6 +1,6 @@
 import { MapPin, Calendar, Moon } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
-import type { ReservationData } from '@/lib/types'
+import type { ReservationData } from '@/modules/concierge/types'
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-US', {

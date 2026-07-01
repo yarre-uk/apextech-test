@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/db'
-import { CreateProposalSchema } from '@/lib/schemas'
+import { CreateProposalSchema } from '@/modules/concierge/schemas'
 import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 

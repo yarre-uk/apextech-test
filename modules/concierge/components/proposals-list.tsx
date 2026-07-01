@@ -1,6 +1,6 @@
 import { ExternalLink, Package } from 'lucide-react'
 import { StatusBadge } from './status-badge'
-import type { ProposalData } from '@/lib/types'
+import type { ProposalData } from '@/modules/concierge/types'
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-US', {

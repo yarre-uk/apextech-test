@@ -1,25 +1,26 @@
-import { prisma } from '@/lib/db'
-import { TripHeader } from '@/components/concierge/trip-header'
-import { ConciergeDashboard } from '@/components/concierge/dashboard'
+import { env } from '@/lib/env'
+import { TripHeader } from '@/modules/concierge/components/trip-header'
+import { ConciergeDashboard } from '@/modules/concierge/components/dashboard'
+import type { ReservationData, ProposalData } from '@/modules/concierge/types'
 
 export const metadata = {
   title: 'Concierge Portal — Exclusive Resorts',
 }
 
+async function getReservation(): Promise<ReservationData | null> {
+  const res = await fetch(`${env.APP_URL}/api/reservations`, { cache: 'no-store' })
+  if (!res.ok) return null
+  return res.json()
+}
+
+async function getProposals(): Promise<ProposalData[]> {
+  const res = await fetch(`${env.APP_URL}/api/proposals`, { cache: 'no-store' })
+  if (!res.ok) return []
+  return res.json()
+}
+
 export default async function HomePage() {
-  const [reservation, proposals] = await Promise.all([
-    prisma.reservation.findFirst({
-      include: { member: true },
-      orderBy: { arrivalDate: 'asc' },
-    }),
-    prisma.proposal.findMany({
-      include: {
-        reservation: { include: { member: true } },
-        _count: { select: { items: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-    }),
-  ])
+  const [reservation, proposals] = await Promise.all([getReservation(), getProposals()])
 
   if (!reservation) {
     return (
@@ -29,32 +30,10 @@ export default async function HomePage() {
     )
   }
 
-  const reservationData = {
-    id: reservation.id,
-    destination: reservation.destination,
-    villa: reservation.villa,
-    arrivalDate: reservation.arrivalDate.toISOString(),
-    departureDate: reservation.departureDate.toISOString(),
-    member: reservation.member,
-  }
-
-  const proposalsData = proposals.map((p) => ({
-    id: p.id,
-    status: p.status,
-    notes: p.notes,
-    createdAt: p.createdAt.toISOString(),
-    sentAt: p.sentAt?.toISOString() ?? null,
-    _count: p._count,
-    reservation: { member: p.reservation.member },
-  }))
-
   return (
     <div className="min-h-screen bg-gray-50">
-      <TripHeader reservation={reservationData} />
-      <ConciergeDashboard
-        reservation={reservationData}
-        initialProposals={proposalsData}
-      />
+      <TripHeader reservation={reservation} />
+      <ConciergeDashboard reservation={reservation} initialProposals={proposals} />
     </div>
   )
 }

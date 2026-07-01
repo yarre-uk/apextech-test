@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/db';
-import { buildProposalEmailBody } from '@/lib/email';
+import { buildProposalEmailBody } from '@/modules/concierge/email';
 import type { NextRequest } from 'next/server';
 
 export async function POST(

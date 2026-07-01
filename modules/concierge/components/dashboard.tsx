@@ -2,9 +2,10 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import type { DraftItem, ProposalData, ReservationData } from '@/lib/types'
+import { useProposalStore } from '@/modules/concierge/store/proposal-store'
 import { ProposalBuilder } from './proposal-builder'
 import { ProposalsList } from './proposals-list'
+import type { ProposalData, ReservationData } from '@/modules/concierge/types'
 
 interface ConciergeDashboardProps {
   reservation: ReservationData
@@ -13,10 +14,12 @@ interface ConciergeDashboardProps {
 
 export function ConciergeDashboard({ reservation, initialProposals }: ConciergeDashboardProps) {
   const router = useRouter()
+  const { items, notes, reset } = useProposalStore()
   const [isSending, setIsSending] = useState(false)
   const [successId, setSuccessId] = useState<string | null>(null)
 
-  async function handleSend(items: DraftItem[], notes: string) {
+  async function handleSend() {
+    if (items.length === 0) return
     setIsSending(true)
     try {
       const createRes = await fetch('/api/proposals', {
@@ -41,6 +44,7 @@ export function ConciergeDashboard({ reservation, initialProposals }: ConciergeD
       const sendRes = await fetch(`/api/proposals/${proposal.id}/send`, { method: 'POST' })
       if (!sendRes.ok) throw new Error('Failed to send proposal')
 
+      reset()
       setSuccessId(proposal.id)
       router.refresh()
       setTimeout(() => setSuccessId(null), 4000)
@@ -60,7 +64,6 @@ export function ConciergeDashboard({ reservation, initialProposals }: ConciergeD
             isSending={isSending}
             successId={successId}
             onSend={handleSend}
-            onSuccess={() => setSuccessId(null)}
           />
         </div>
         <div className="lg:col-span-1">
