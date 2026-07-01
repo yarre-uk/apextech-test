@@ -1,139 +1,142 @@
-Full Stack Developer Assessment
-Estimated Time: 3.5 – 4.5 hours​
-Stack: Next.js 14+ (App Router), Tailwind CSS, SQLite (via better-sqlite3 or Prisma + SQLite),
-TypeScript
+# Concierge Itinerary Proposal System
 
-Overview
-You are building a lightweight Concierge Itinerary Proposal System for Exclusive Resorts. A
-concierge can build a curated trip itinerary for a member, send it as a proposal via email, and
-the member can review, approve, and “pay” to lock it in before their trip.
-This reflects a real workflow problem in luxury travel — we want to see how you think about
-product, data modeling, UX, and clean code under time pressure.
+Full-stack assessment project — Exclusive Resorts.
 
-The Scenario
-A member named James Whitfield is arriving at Villa Punta Mita, Mexico on March 15 and
-departing March 22. The concierge team wants to build him a personalized itinerary proposal
-and get his sign-off before he arrives.
-You are given:
-●​ A simulated member record (hardcoded or seeded in the DB)​
-●​ A hardcoded reservation (arrival/departure + destination) to display context​
-●​ A set of itinerary categories to build from​
+## Stack
 
-What You’ll Build
+- **Next.js 16.2.9** (App Router, React 19)
+- **Prisma 7 + SQLite** via `@prisma/adapter-better-sqlite3`
+- **Tailwind CSS v4** + shadcn/ui
+- **Zod v4** for API and form validation
+- **Zustand v5** for client draft state
+- **react-hook-form v7** for form handling
+- **TypeScript** throughout
 
-1. Concierge Dashboard (Front End)
-A single-page dashboard the concierge uses to:
-●​ See the member’s upcoming trip — destination, arrival, departure dates displayed
-prominently at the top​
-●​ Build an itinerary proposal by adding line items from predefined categories (see below)​
-●​ Each line item has: category, title, description, date/time, estimated price​
-●​ Preview the proposal before sending​
-●​ Send the proposal — this triggers a “send email” action (you do not need a real email
-service; log to console or write to a sent_emails table, and display a success state in the
-UI)​
-●​ View all sent proposals with their current status (draft, sent, approved, paid)​
+---
 
-2. Member Experience (Front End)
-A separate route (e.g. /proposal/[id]) that simulates what the member sees when they click the
-link in their email:
-●​ Beautifully presented itinerary with all line items, dates, and pricing​
-●​ Total cost clearly shown​
-●​ Approve button — moves proposal to approved​
-●​ Pay & Lock In button — moves proposal to paid and shows a confirmation screen​
-●​ Proposal should feel premium — this is a luxury brand​
+## Running locally
 
-3. API / Backend
-RESTful or Next.js Route Handlers covering:
+```bash
+# 1. Install dependencies
+npm install
 
-●​ GET /api/reservations — return the member’s current reservation​
-●​ POST /api/proposals — create a new proposal (draft)​
-●​ GET /api/proposals — list all proposals with status​
-●​ GET /api/proposals/[id] — get a single proposal with line items​
-●​ PATCH /api/proposals/[id] — update status (sent, approved, paid)​
-●​ POST /api/proposals/[id]/send — mark as sent + log the “email”​
+# 2. Create .env
+echo 'DATABASE_URL="file:./dev.db"' > .env
+echo 'APP_URL="http://localhost:3000"' >> .env
 
-4. Database (SQLite)
-Design and implement a simple schema. At minimum:
-members — id, name, email
-reservations — id, member_id, destination, villa, arrival_date, departure_date
-proposals — id, reservation_id, status, created_at, sent_at
-proposal_items — id, proposal_id, category, title, description, scheduled_at, price
-sent_emails — id, proposal_id, to_email, sent_at, body_preview
-Seed the DB with the member and reservation described above.
+# 3. Run migrations and seed
+npx prisma migrate dev
+npm run db:seed
 
-Itinerary Categories
-Use these categories as the building blocks for line items. Display them as selectable cards or a
-dropdown in the concierge UI:
-Category Dining — Private chef dinner, restaurant reservation
-Category Activities — Surf lesson, snorkeling, ATV tour
-Category Wellness — Spa treatment, yoga session, massage
+# 4. Start the dev server
+npm run dev
+```
 
-Category Excursions — Whale watching, sailing charter, cultural tour
-Category Transport — Airport transfer, private car, helicopter
-Category Experiences — Sunset cocktails, bonfire on the beach, tequila tasting
+Open [http://localhost:3000](http://localhost:3000) for the concierge dashboard.
+The member view is at `/proposal/[id]` — the link appears in the proposal history sidebar after sending.
 
-Requirements & Constraints
-●​ TypeScript throughout​
-●​ Tailwind CSS for all styling — no component libraries unless you bring in shadcn/ui
-(acceptable)​
-●​ Next.js App Router preferred (Pages Router acceptable if you explain why)​
-●​ SQLite for persistence — use better-sqlite3, Prisma with SQLite, or Drizzle with SQLite​
-●​ No real payment processing — a button that moves status to paid is sufficient​
-●​ No real email sending — write to a DB table and/or console log​
-●​ A README.md explaining how to run the project locally (one command ideally)​
+---
 
-Evaluation Criteria
-Area: Problem Thinking​
-What We’re Looking For: Does the data model make sense? Does the workflow feel right?
-Area: UI/UX Quality​
-What We’re Looking For: Does the concierge dashboard feel functional and efficient? Does the
-member view feel premium and luxurious?
-Area: Code Quality​
-What We’re Looking For: Clean, readable TypeScript. Sensible component structure. No
-spaghetti.
+## Project structure
 
-Area: API Design​
-What We’re Looking For: Are routes logical, consistent, and do they handle errors gracefully?
-Area: Completeness​
-What We’re Looking For: Does the full loop work — create → send → approve → pay?
-Area: README / Communication​
-What We’re Looking For: Can you explain your decisions clearly and concisely?
+```
+app/
+  page.tsx                          # Concierge dashboard (server component)
+  proposal/[id]/page.tsx            # Member proposal view (server component)
+  api/                              # Thin Next.js route stubs — one-line re-exports only
 
-Deliverables
-1.​ GitHub repo (public or shared with us) with your full solution​
-2.​ README.md that includes:​
-●​ How to install and run locally​
-●​ Any assumptions you made​
-●​ What you would improve given more time​
-●​ What you found most interesting or challenging​
-3.​ A short Loom or recorded screen walkthrough (5–10 min) demoing the full flow and
-talking through your key decisions — this is important to us​
+modules/
+  concierge/                        # Concierge domain
+    api/                            # Route handler implementations
+    api.ts                          # Client-side fetch helpers
+    api.server.ts                   # Server-side fetch helpers (uses env for absolute URLs)
+    components/
+      proposal-builder/             # Category selector, item form, items list, preview dialog
+      dashboard.tsx                 # Orchestrates the concierge workflow
+      proposals-list.tsx            # Sidebar history of sent proposals
+      trip-header.tsx               # Top bar with member + reservation info
+    constants.ts                    # CATEGORIES, Category type
+    schemas.ts                      # API-facing Zod schemas (CreateProposalSchema, etc.)
+    form-schemas.ts                 # Form-facing Zod schemas (ItemFormSchema)
+    store/proposal-store.ts         # Zustand store for draft state
+    types.ts                        # Serialisable types for server → client
+    email.ts                        # Email body builder
 
-Stretch Goals (only if you finish early)
-●​ Add a notes/message field the concierge can include with the proposal (rendered in the
-member view)​
-●​ Allow the concierge to edit a draft before sending​
-●​ Show a timeline view of the itinerary (day-by-day) in the member view​
-●​ Add optimistic UI updates so status changes feel instant​
+  member/                           # Member domain
+    api/                            # Route handler implementations
+    api.ts                          # Client-side fetch helpers
+    api.server.ts                   # Server-side fetch helpers
+    components/
+      proposal-view.tsx             # Layout shell
+      proposal-header.tsx           # Villa / dates / member header
+      itinerary-timeline.tsx        # Items grouped by day
+      approve-pay-panel.tsx         # Status transition UI (sent → approved → paid)
+    schemas.ts                      # UpdateProposalStatusSchema
+    types.ts                        # ProposalDetailData, ProposalItem
+    utils.ts                        # Formatting and groupByDay helpers
+```
 
-●​ Animate the proposal approval / payment confirmation screen​
-●​ Support multiple members / reservations in the UI​
+The `app/api/` files are intentionally minimal — each is a one-line re-export pointing to the real handler in the relevant module. This keeps Next.js routing wiring separate from domain logic.
 
-Tips & Notes
-●​ We’re a luxury travel company. The member-facing view should feel that way — think
-clean whitespace, elegant typography, subtle imagery or gradients. Tailwind gives you
-everything you need.​
-●​ The concierge view should be efficient — they’re professionals who move fast. Prioritize
-clarity over decoration here.​
-●​ Don’t overthink the database. SQLite is fine. Normalize just enough to make the queries
-clean.​
-●​ The Loom walkthrough carries real weight — we want to hear you think out loud.​
-●​ If something is broken or incomplete, call it out in your README. Honesty matters more
-than pretending it’s perfect.​
+---
 
-Submission
-Please submit your GitHub link and Loom by [INSERT DEADLINE] to [INSERT EMAIL].
-Questions? Reach out — we want you to succeed.
-Good luck. We’re excited to see how you think.
+## Architecture decisions
 
-
+### Module boundaries mirror domain boundaries
+
+Two modules: `concierge` (staff-facing) and `member` (guest-facing). Each owns its API handlers, types, schemas, and fetch helpers. The only cross-module dependency is `MemberData` and `ProposalStatus`, which are exported from `concierge/types` since the concierge module is the authority on those shared primitives.
+
+### Schema split: API vs form
+
+`concierge/schemas.ts` contains Zod schemas for API validation — strict, ISO datetime strings, `z.number().positive()`. `concierge/form-schemas.ts` contains form schemas — `scheduledAt` as a plain string (the input emits local datetime format, not ISO), `description` optional. They intentionally diverge because the form has UX constraints the API doesn't care about.
+
+### Status transitions as explicit data
+
+```ts
+const VALID_TRANSITIONS: Record<string, string[]> = {
+  sent: ['approved'],
+  approved: ['paid'],
+}
+```
+
+The allowed state machine is declared in one place in the PATCH handler. Adding a new status (e.g. `rejected`) means adding one entry here rather than hunting for conditionals.
+
+### Proposals embedded in reservation response
+
+`GET /api/reservations` returns the reservation with proposals included. This halves the number of round trips on initial page load. The tradeoff is that refreshing the proposal list (after sending) re-fetches the full reservation — acceptable for this scale, and `router.refresh()` in Next.js triggers a server re-render which keeps it consistent.
+
+### Email simulation
+
+Rather than a no-op, the send flow writes a `SentEmail` row to the database with the full email body preview and logs it to stdout. This proves the workflow is wired correctly and leaves an audit trail. Swapping in a real provider (Resend, SendGrid) requires only updating `POST /api/proposals/[id]/send`.
+
+### Two-step create + send (known tradeoff)
+
+The spec defines `POST /api/proposals` (create draft) and `POST /api/proposals/[id]/send` as separate routes, which fits a workflow where drafts can be saved and sent later. In the current UI the concierge always sends immediately, so the client makes two sequential calls. This introduces a failure window: if create succeeds and send fails, an orphaned draft is left in the database.
+
+The correct production approach is event-driven: `POST /api/proposals` emits a `ProposalCreated` event; a worker listens and triggers the send flow with automatic retries — the client never calls send directly and the failure surface disappears. For this scope, the two-call approach is acceptable; it would be the first thing to address before going to production.
+
+---
+
+## Assumptions
+
+- **Single active reservation.** The concierge dashboard shows the first upcoming reservation. The assessment describes a single scenario (James Whitfield, Villa Punta Mita), so no session or auth context is needed.
+- **No authentication.** Both the concierge dashboard and the member proposal URL are publicly accessible. In production, the concierge portal would sit behind SSO and the proposal link would be a signed/expiring token.
+- **SQLite is sufficient.** The assessment specifies it. The Prisma adapter layer means swapping to Postgres requires only changing the datasource provider and connection string.
+- **No real payment.** The "Pay & Lock In" button transitions status to `paid`. The assessment explicitly calls this out as acceptable.
+- **Price is stored as `Float`.** For real money, `Decimal` or integer cents would be more appropriate. `Float` is fine for demo purposes.
+
+---
+
+## What I would improve given more time
+
+- **Authentication.** Concierge portal behind an auth provider (NextAuth, Clerk). Member proposal links as signed JWTs with expiry so only the right person can approve.
+- **React Query.** Client mutations (`handleSend`, approve, pay) currently use `useState` + `fetch` + `router.refresh()`. TanStack Query's `useMutation` would handle loading/error/invalidation more cleanly as the app grows.
+- **Edit draft before sending.** Currently once items are added to a draft, the only action is send. A draft editor would let the concierge save progress and return later.
+- **Real email delivery.** Drop-in with Resend — the `buildProposalEmailBody` helper already produces the email body; the send handler just needs a `resend.emails.send()` call.
+- **Optimistic UI.** The approve/pay transitions update local state immediately but wait for `router.refresh()` for the server-side list to update. A proper optimistic update with rollback on failure would feel faster.
+- **Proper enums in Prisma.** `Proposal.status` is a `String` because SQLite has no native enum type. With Postgres, this becomes `enum ProposalStatus { draft sent approved paid }` with full DB-level constraint.
+- **Error boundaries.** Client components have local error state but there are no React error boundaries to catch unexpected render errors.
+- **Rate limiting.** The API routes have no rate limiting. In production, the PATCH and send endpoints would need protection against abuse.
+- **Tests.** No automated tests. The logical seams exist (schemas, pure utility functions, status transition logic) — these are the right places to start.
+
+---

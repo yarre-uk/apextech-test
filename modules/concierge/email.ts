@@ -10,6 +10,16 @@ interface ProposalEmailParams {
   itemCount: number;
 }
 
+export interface SendEmailParams {
+  to: string
+  body: string
+}
+
+export function sendEmail({ to, body }: SendEmailParams): void {
+  console.log(`[EMAIL] To: ${to}`)
+  console.log(`[EMAIL] ${body}`)
+}
+
 export function buildProposalEmailBody(params: ProposalEmailParams): string {
   const {
     proposalId,

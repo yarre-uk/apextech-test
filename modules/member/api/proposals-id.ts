@@ -48,17 +48,29 @@ export async function PATCH(
       return Response.json({ error: 'Proposal not found' }, { status: 404 })
     }
 
-    if (!VALID_TRANSITIONS[existing.status]?.includes(result.data.status)) {
+    const allowedFrom = VALID_TRANSITIONS[existing.status]
+    if (!allowedFrom?.includes(result.data.status)) {
       return Response.json(
         { error: `Cannot transition from "${existing.status}" to "${result.data.status}"` },
         { status: 409 },
       )
     }
 
-    const proposal = await prisma.proposal.update({
-      where: { id },
+    // Re-check the current status inside the update to prevent a concurrent
+    // request from transitioning the same proposal twice.
+    const { count } = await prisma.proposal.updateMany({
+      where: { id, status: existing.status },
       data: { status: result.data.status },
     })
+
+    if (count === 0) {
+      return Response.json(
+        { error: 'Proposal status changed concurrently — please refresh and try again' },
+        { status: 409 },
+      )
+    }
+
+    const proposal = await prisma.proposal.findUniqueOrThrow({ where: { id } })
 
     return Response.json(proposal)
   } catch {
