@@ -2,6 +2,14 @@ import { prisma } from '@/lib/db'
 import { buildProposalEmailBody } from '@/modules/concierge/email'
 import type { NextRequest } from 'next/server'
 
+/**
+ * POST /api/proposals/[id]/send
+ * Marks a draft proposal as "sent", records a SentEmail row, and logs the
+ * email body to stdout (simulated delivery).
+ * 404 — proposal not found
+ * 409 — proposal is not in "draft" status
+ * 422 — proposal has no items
+ */
 export async function POST(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -19,6 +27,13 @@ export async function POST(
 
     if (!proposal) {
       return Response.json({ error: 'Proposal not found' }, { status: 404 })
+    }
+
+    if (proposal.items.length === 0) {
+      return Response.json(
+        { error: 'Cannot send a proposal with no items' },
+        { status: 422 },
+      )
     }
 
     if (proposal.status !== 'draft') {

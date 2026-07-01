@@ -1,7 +1,9 @@
 'use client'
 
+import { useMemo } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,9 +12,43 @@ import { Label } from '@/components/ui/label'
 import { ItemFormSchema, type ItemFormValues } from '@/modules/concierge/schemas'
 import { useProposalStore } from '@/modules/concierge/store/proposal-store'
 
-export function ItemForm() {
+function toDateTimeLocal(iso: string) {
+  return iso.slice(0, 16) // "2026-03-15T00:00"
+}
+
+function formatShort(iso: string) {
+  return new Date(iso).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
+interface ItemFormProps {
+  arrivalDate: string
+  departureDate: string
+}
+
+export function ItemForm({ arrivalDate, departureDate }: ItemFormProps) {
   const selectedCategory = useProposalStore((s) => s.selectedCategory)
   const addItem = useProposalStore((s) => s.addItem)
+
+  const schema = useMemo(() => {
+    const arrival = new Date(arrivalDate)
+    const departure = new Date(departureDate)
+    return ItemFormSchema.extend({
+      scheduledAt: z
+        .string()
+        .min(1, 'Date & time is required')
+        .refine(
+          (val) => {
+            const d = new Date(val)
+            return d >= arrival && d <= departure
+          },
+          `Must fall within the stay: ${formatShort(arrivalDate)} – ${formatShort(departureDate)}`,
+        ),
+    })
+  }, [arrivalDate, departureDate])
 
   const {
     register,
@@ -20,7 +56,7 @@ export function ItemForm() {
     reset,
     formState: { errors },
   } = useForm<ItemFormValues>({
-    resolver: zodResolver(ItemFormSchema),
+    resolver: zodResolver(schema),
     defaultValues: { description: '' },
   })
 
@@ -33,8 +69,7 @@ export function ItemForm() {
       scheduledAt: new Date(values.scheduledAt).toISOString(),
       price: values.price,
     })
-
-    reset();
+    reset()
   }
 
   return (
@@ -76,6 +111,8 @@ export function ItemForm() {
           <Input
             id="scheduledAt"
             type="datetime-local"
+            min={toDateTimeLocal(arrivalDate)}
+            max={toDateTimeLocal(departureDate)}
             className="mt-1"
             {...register('scheduledAt')}
           />

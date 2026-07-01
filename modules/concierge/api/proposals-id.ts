@@ -3,6 +3,11 @@ import { UpdateProposalStatusSchema } from '@/modules/concierge/schemas'
 import type { NextRequest } from 'next/server'
 import { z } from 'zod'
 
+/**
+ * GET /api/proposals/[id]
+ * Returns a single proposal with reservation+member, ordered items, and the
+ * most recent sent email record. 404 if not found.
+ */
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -34,13 +39,31 @@ const VALID_TRANSITIONS: Record<string, string[]> = {
   approved: ['paid'],
 }
 
+/**
+ * PATCH /api/proposals/[id]
+ * Advances a proposal's status via allowed transitions:
+ *   sent → approved → paid
+ * 400 — malformed JSON or schema validation failure
+ * 404 — proposal not found
+ * 409 — transition not permitted from current status
+ */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params
-    const body = await request.json()
+
+    let body: unknown
+    try {
+      body = await request.json()
+    } catch {
+      return Response.json(
+        { error: 'Request body must be valid JSON' },
+        { status: 400 },
+      )
+    }
+
     const result = UpdateProposalStatusSchema.safeParse(body)
 
     if (!result.success) {

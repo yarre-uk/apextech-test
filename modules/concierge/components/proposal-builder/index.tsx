@@ -39,7 +39,7 @@ export function ProposalBuilder({
 
       <CategorySelector />
       <Separator />
-      <ItemForm />
+      <ItemForm arrivalDate={reservation.arrivalDate} departureDate={reservation.departureDate} />
       <Separator />
 
       <div>

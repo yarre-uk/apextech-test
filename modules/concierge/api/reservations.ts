@@ -1,5 +1,10 @@
 import { prisma } from '@/lib/db'
 
+/**
+ * GET /api/reservations
+ * Returns the first upcoming reservation with its member.
+ * 404 if no reservation exists.
+ */
 export async function GET() {
   try {
     const reservation = await prisma.reservation.findFirst({
