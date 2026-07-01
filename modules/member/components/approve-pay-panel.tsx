@@ -4,15 +4,16 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { patchProposalStatus } from '@/modules/member/api'
+import type { ProposalStatus } from '@/modules/member/types'
 
 interface ApprovePayPanelProps {
   proposalId: string
-  status: string
+  status: ProposalStatus
 }
 
 export function ApprovePayPanel({ proposalId, status: initialStatus }: ApprovePayPanelProps) {
   const router = useRouter()
-  const [status, setStatus] = useState(initialStatus)
+  const [status, setStatus] = useState<ProposalStatus>(initialStatus)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 

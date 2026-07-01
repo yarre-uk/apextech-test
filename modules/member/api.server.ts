@@ -1,5 +1,5 @@
 import { env } from '@/lib/env'
-import type { ProposalDetailData } from '@/modules/concierge/types'
+import type { ProposalDetailData } from '@/modules/member/types'
 
 export async function getProposal(id: string): Promise<ProposalDetailData | null> {
   const res = await fetch(`${env.APP_URL}/api/proposals/${id}`, { cache: 'no-store' })
