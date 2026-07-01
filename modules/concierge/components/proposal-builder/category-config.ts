@@ -6,7 +6,7 @@ import {
   Car,
   Star,
 } from 'lucide-react'
-import type { Category } from '@/modules/concierge/schemas'
+import type { Category } from '@/modules/concierge/constants'
 
 export interface CategoryConfig {
   icon: React.ElementType

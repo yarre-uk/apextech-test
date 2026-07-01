@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { ItemFormSchema, type ItemFormValues } from '@/modules/concierge/schemas'
+import { ItemFormSchema, type ItemFormValues } from '@/modules/concierge/form-schemas'
 import { useProposalStore } from '@/modules/concierge/store/proposal-store'
 
 function toDateTimeLocal(iso: string) {

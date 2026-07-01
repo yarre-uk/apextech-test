@@ -18,10 +18,12 @@ export function ConciergeDashboard({ reservation, initialProposals }: ConciergeD
   const { items, notes, reset } = useProposalStore()
   const [isSending, setIsSending] = useState(false)
   const [successId, setSuccessId] = useState<string | null>(null)
+  const [sendError, setSendError] = useState<string | null>(null)
 
   async function handleSend() {
     if (items.length === 0) return
     setIsSending(true)
+    setSendError(null)
     try {
       const proposal = await createProposal(
         reservation.id,
@@ -36,8 +38,8 @@ export function ConciergeDashboard({ reservation, initialProposals }: ConciergeD
       setSuccessId(proposal.id)
       router.refresh()
       setTimeout(() => setSuccessId(null), 4000)
-    } catch (err) {
-      console.error(err)
+    } catch {
+      setSendError('Failed to send proposal. Please try again.')
     } finally {
       setIsSending(false)
     }
@@ -51,6 +53,7 @@ export function ConciergeDashboard({ reservation, initialProposals }: ConciergeD
             reservation={reservation}
             isSending={isSending}
             successId={successId}
+            sendError={sendError}
             onSend={handleSend}
           />
         </div>

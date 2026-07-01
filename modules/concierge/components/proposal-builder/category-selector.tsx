@@ -1,7 +1,7 @@
 'use client'
 
 import { cn } from '@/lib/utils'
-import { CATEGORIES, type Category } from '@/modules/concierge/schemas'
+import { CATEGORIES, type Category } from '@/modules/concierge/constants'
 import { CATEGORY_CONFIG } from './category-config'
 import { useProposalStore } from '@/modules/concierge/store/proposal-store'
 

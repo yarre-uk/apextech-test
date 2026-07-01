@@ -14,6 +14,7 @@ interface ProposalBuilderProps {
   reservation: ReservationData
   isSending: boolean
   successId: string | null
+  sendError: string | null
   onSend: () => void
 }
 
@@ -21,6 +22,7 @@ export function ProposalBuilder({
   reservation,
   isSending,
   successId,
+  sendError,
   onSend,
 }: ProposalBuilderProps) {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false)
@@ -34,6 +36,9 @@ export function ProposalBuilder({
         </h2>
         {successId && (
           <span className="text-sm font-medium text-emerald-600">✓ Proposal sent</span>
+        )}
+        {sendError && (
+          <span className="text-sm font-medium text-red-500">{sendError}</span>
         )}
       </div>
 

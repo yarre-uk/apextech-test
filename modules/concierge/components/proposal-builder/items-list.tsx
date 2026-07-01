@@ -4,7 +4,7 @@ import { Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useProposalStore } from '@/modules/concierge/store/proposal-store'
 import { CATEGORY_CONFIG, formatPrice, formatDateTime } from './category-config'
-import type { Category } from '@/modules/concierge/schemas'
+import type { Category } from '@/modules/concierge/constants'
 
 export function ItemsList() {
   const items = useProposalStore((s) => s.items)

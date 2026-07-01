@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { cn } from '@/lib/utils'
 import { useProposalStore } from '@/modules/concierge/store/proposal-store'
 import { CATEGORY_CONFIG, formatPrice, formatDateTime } from './category-config'
-import type { Category } from '@/modules/concierge/schemas'
+import type { Category } from '@/modules/concierge/constants'
 import type { ReservationData } from '@/modules/concierge/types'
 
 interface ProposalPreviewDialogProps {

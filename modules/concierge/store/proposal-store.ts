@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import type { Category } from '@/modules/concierge/schemas'
+import type { Category } from '@/modules/concierge/constants'
 import type { DraftItem } from '@/modules/concierge/types'
 
 interface ProposalState {
