@@ -72,11 +72,57 @@ modules/
       itinerary-timeline.tsx        # Items grouped by day
       approve-pay-panel.tsx         # Status transition UI (sent → approved → paid)
     schemas.ts                      # UpdateProposalStatusSchema
+    transitions.ts                  # VALID_TRANSITIONS map + isValidTransition()
     types.ts                        # ProposalDetailData, ProposalItem
     utils.ts                        # Formatting and groupByDay helpers
+
+__tests__/
+  concierge/
+    schemas.test.ts                 # CreateProposalSchema, ProposalItemSchema, ProposalStatus
+    form-schemas.test.ts            # ItemFormSchema
+    email.test.ts                   # buildProposalEmailBody, sendEmail
+  member/
+    schemas.test.ts                 # UpdateProposalStatusSchema
+    transitions.test.ts             # isValidTransition state machine
+    utils.test.ts                   # groupByDay, formatCurrency, formatDate, formatDateTime
+  api/
+    reservations.test.ts            # GET /api/reservations
+    proposals.test.ts               # GET + POST /api/proposals
+    proposals-id.test.ts            # GET /api/proposals/[id]
+    proposals-id-send.test.ts       # POST /api/proposals/[id]/send
+    proposals-id-patch.test.ts      # PATCH /api/proposals/[id]
 ```
 
 The `app/api/` files are intentionally minimal — each is a one-line re-export pointing to the real handler in the relevant module. This keeps Next.js routing wiring separate from domain logic.
+
+---
+
+## Testing
+
+```bash
+npm test          # run all tests once
+npm run test:ui   # open Vitest browser UI
+```
+
+**79 tests across 11 files — no external services, no database required.**
+
+Tests are split into two layers:
+
+**Unit tests** (`__tests__/concierge/`, `__tests__/member/`) cover pure logic in isolation: Zod schemas (valid inputs, invalid inputs, edge cases), `isValidTransition` state machine, and utility functions (`formatCurrency`, `groupByDay`, etc.).
+
+**Route handler tests** (`__tests__/api/`) cover every API endpoint. Prisma is replaced with Vitest mocks (`vi.mock('@/lib/db', ...)`), so tests run in milliseconds without a real database. Each handler is exercised for:
+- Happy path (correct status code + response shape)
+- Validation failures (400)
+- Not-found cases (404)
+- Business rule violations (409, 422)
+- Concurrent modification (the `updateMany` count check)
+- Unexpected DB errors (500)
+
+The `$transaction` mock pattern used in the send handler tests:
+```ts
+$transaction: vi.fn((fn) => fn(mockTx))
+```
+This lets the callback run synchronously against a controlled `mockTx` object without requiring an actual SQLite transaction.
 
 ---
 
@@ -99,7 +145,7 @@ const VALID_TRANSITIONS: Record<string, string[]> = {
 }
 ```
 
-The allowed state machine is declared in one place in the PATCH handler. Adding a new status (e.g. `rejected`) means adding one entry here rather than hunting for conditionals.
+The allowed state machine is declared in one place (`member/transitions.ts`) and imported by both the PATCH handler and the test suite. Adding a new status (e.g. `rejected`) means adding one entry here rather than hunting for conditionals.
 
 ### Proposals embedded in reservation response
 
@@ -137,6 +183,5 @@ The correct production approach is event-driven: `POST /api/proposals` emits a `
 - **Proper enums in Prisma.** `Proposal.status` is a `String` because SQLite has no native enum type. With Postgres, this becomes `enum ProposalStatus { draft sent approved paid }` with full DB-level constraint.
 - **Error boundaries.** Client components have local error state but there are no React error boundaries to catch unexpected render errors.
 - **Rate limiting.** The API routes have no rate limiting. In production, the PATCH and send endpoints would need protection against abuse.
-- **Tests.** No automated tests. The logical seams exist (schemas, pure utility functions, status transition logic) — these are the right places to start.
 
 ---

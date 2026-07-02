@@ -1,12 +1,8 @@
 import { prisma } from '@/lib/db'
 import { UpdateProposalStatusSchema } from '@/modules/member/schemas'
+import { isValidTransition } from '@/modules/member/transitions'
 import type { NextRequest } from 'next/server'
 import { z } from 'zod'
-
-const VALID_TRANSITIONS: Record<string, string[]> = {
-  sent: ['approved'],
-  approved: ['paid'],
-}
 
 /**
  * PATCH /api/proposals/[id]
@@ -48,8 +44,7 @@ export async function PATCH(
       return Response.json({ error: 'Proposal not found' }, { status: 404 })
     }
 
-    const allowedFrom = VALID_TRANSITIONS[existing.status]
-    if (!allowedFrom?.includes(result.data.status)) {
+    if (!isValidTransition(existing.status, result.data.status)) {
       return Response.json(
         { error: `Cannot transition from "${existing.status}" to "${result.data.status}"` },
         { status: 409 },
