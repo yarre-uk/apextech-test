@@ -21,6 +21,15 @@ export function formatCurrency(amount: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount)
 }
 
+export function formatPrice(amount: number) {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount)
+}
+
 export function groupByDay<T extends { scheduledAt: string }>(items: T[]): Record<string, T[]> {
   return items.reduce<Record<string, T[]>>((acc, item) => {
     const day = new Date(item.scheduledAt).toDateString()
